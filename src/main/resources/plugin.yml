@@ -1,5 +1,0 @@
-name: RedefinedGlowingBlocks
-version: '1.0'
-main: me.msmaciek.redefinedglowingblocks.RedefinedGlowingBlocks
-api-version: '1.20'
-depend: [ProtocolLib]

@@ -2,6 +2,7 @@
 
 **Redefined Glowing Blocks** is an API for developers to make blocks glowing. \
 Supported Minecraft versions: 1.20+ (due to use of block displays) \
+Dependencies: ProtocolLib \
 Any block could glow as full block or as depending on its texture. Some blocks with a lot of states like levers, buttons, flowers, candles may not work properly (use full block glow then).
 
 Example usage (this is your main class implementing listener):
