@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'me.msmaciek'
+group = 'com.github.MsMaciek123'
 version = '1.0.0'
 
 repositories {
@@ -68,17 +68,4 @@ processResources {
     filesMatching('paper-plugin.yml') {
         expand props
     }
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
-}
-
-wrapper {
-    gradleVersion = "8.5"
-    distributionType = Wrapper.DistributionType.ALL
 }
