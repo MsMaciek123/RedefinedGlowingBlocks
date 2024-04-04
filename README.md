@@ -29,5 +29,34 @@ public void onPlayerInteract(PlayerInteractEvent event) {
 }
 ```
 
+Replace VERSION with current version.
+Gradle:
+```
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
 
-Gradle is comming soon
+dependencies {
+    implementation 'com.github.MsMaciek123:RedefinedGlowingBlocks:VERSION'
+}
+```
+
+Maven:
+```
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.github.MsMaciek123</groupId>
+    <artifactId>RedefinedGlowingBlocks</artifactId>
+    <version>VERSION</version>
+</dependency>
+```
