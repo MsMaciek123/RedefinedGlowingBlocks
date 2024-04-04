@@ -59,20 +59,21 @@ public class GlowingBlocksAPI {
         else
             glowingBlocks.get(receiver.getUniqueId()).put(block.getLocation(), glowingBlock);
 
-
-
         glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).ensureVisiblity();
     }
 
     public void unsetGlowing(Player receiver, Block block) {
-        if(glowingBlocks.containsKey(receiver.getUniqueId())
-                && glowingBlocks.get(receiver.getUniqueId()).containsKey(block.getLocation())) {
-
+        if(isGlowing(receiver, block)) {
             glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).ensureInvisibility();
             glowingBlocks.get(receiver.getUniqueId()).remove(block.getLocation());
 
             if(glowingBlocks.get(receiver.getUniqueId()).isEmpty())
                 glowingBlocks.remove(receiver.getUniqueId());
         }
+    }
+
+    public boolean isGlowing(Player receiver, Block block) {
+        return glowingBlocks.containsKey(receiver.getUniqueId())
+                && glowingBlocks.get(receiver.getUniqueId()).containsKey(block.getLocation());
     }
 }
