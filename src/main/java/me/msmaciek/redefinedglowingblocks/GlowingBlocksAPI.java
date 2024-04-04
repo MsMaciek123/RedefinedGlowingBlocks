@@ -52,8 +52,14 @@ public class GlowingBlocksAPI {
     public void setGlowing(Player receiver, Block block, ChatColor color, FullBlockEnum fullBlock) {
         glowingBlocks.putIfAbsent(receiver.getUniqueId(), new HashMap<>());
 
-        if(!glowingBlocks.get(receiver.getUniqueId()).containsKey(block.getLocation()))
-            glowingBlocks.get(receiver.getUniqueId()).put(block.getLocation(), new GlowingBlock(receiver, block, color, fullBlock));
+        GlowingBlock glowingBlock = new GlowingBlock(receiver, block, color, fullBlock);
+
+        if(glowingBlocks.get(receiver.getUniqueId()).containsKey(block.getLocation()))
+            glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).RewriteGlowingBlock(glowingBlock);
+        else
+            glowingBlocks.get(receiver.getUniqueId()).put(block.getLocation(), glowingBlock);
+
+
 
         glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).ensureVisiblity();
     }

@@ -73,6 +73,11 @@ public class GlowingBlock {
         calculateEntityLocation();
     }
 
+    public void RewriteGlowingBlock(GlowingBlock otherGlowingBlock) {
+        // TODO: Recalculate fullBlock and entity location
+        this.color = otherGlowingBlock.color;
+    }
+
     void calculateEntityLocation() {
         Location loc = block.getLocation();
 

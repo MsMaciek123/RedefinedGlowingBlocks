@@ -32,14 +32,11 @@ public void onPlayerInteract(PlayerInteractEvent event) {
 Replace VERSION with current version.
 Gradle:
 ```
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-    }
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
 }
-
+   
 dependencies {
     implementation 'com.github.MsMaciek123:RedefinedGlowingBlocks:VERSION'
 }
