@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group = 'me.msmaciek'
@@ -41,6 +42,9 @@ dependencies {
 
 def targetJavaVersion = 17
 java {
+    withSourcesJar()
+    withJavadocJar()
+
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
@@ -64,4 +68,17 @@ processResources {
     filesMatching('paper-plugin.yml') {
         expand props
     }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+wrapper {
+    gradleVersion = "8.5"
+    distributionType = Wrapper.DistributionType.ALL
 }
