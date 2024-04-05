@@ -30,7 +30,7 @@ public void onPlayerInteract(PlayerInteractEvent event) {
 ```
 
 
-Replace VERSION with current version: (https://jitpack.io/v/MsMaciek123/RedefinedGlowingBlocks.svg) \
+Replace VERSION with current version: ![Release](https://jitpack.io/v/MsMaciek123/RedefinedGlowingBlocks.svg)    \
 Gradle:
 ```
 repositories {
