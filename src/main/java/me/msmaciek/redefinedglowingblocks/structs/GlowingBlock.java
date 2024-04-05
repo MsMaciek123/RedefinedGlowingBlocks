@@ -20,7 +20,9 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
+import org.bukkit.util.VoxelShape;
 import org.joml.Vector3f;
 
 import java.util.Collections;
@@ -65,12 +67,25 @@ public class GlowingBlock {
         this.fullBlock = fullBlock;
         if(fullBlock.equals(FullBlockEnum.Detect)) {
             if(block.getType().isOccluding())
-                this.fullBlock = FullBlockEnum.Force;
+                this.fullBlock = FullBlockEnum.FullOpaque;
+            else if(isCube(block))
+                this.fullBlock = FullBlockEnum.FullTransparent;
             else
-                this.fullBlock = FullBlockEnum.ForceNot;
+                this.fullBlock = FullBlockEnum.Nonfull;
         }
 
         calculateEntityLocation();
+    }
+
+    // https://www.spigotmc.org/threads/how-to-check-if-a-block-is-realy-a-block.536470/
+    public boolean isCube(Block block) {
+        VoxelShape voxelShape = block.getCollisionShape();
+        BoundingBox boundingBox = block.getBoundingBox();
+        return (voxelShape.getBoundingBoxes().size() == 1
+                && boundingBox.getWidthX() == 1.0
+                && boundingBox.getHeight() == 1.0
+                && boundingBox.getWidthZ() == 1.0
+        );
     }
 
     public void RewriteGlowingBlock(GlowingBlock otherGlowingBlock) {
@@ -84,7 +99,7 @@ public class GlowingBlock {
         Vector positionModifier = new Vector(0, 0, 0);
 
         // Stairs
-        if(!this.fullBlock.equals(FullBlockEnum.Force))
+        if(this.fullBlock.equals(FullBlockEnum.Nonfull))
         {
             if (block.getBlockData() instanceof Bisected blockDataBiselected &&
                     blockDataBiselected.getHalf() == Bisected.Half.TOP) {
@@ -132,10 +147,18 @@ public class GlowingBlock {
     }
 
     private void spawnEntity() {
-        if(this.fullBlock.equals(FullBlockEnum.ForceNot)) {
-            spawnBlockDisplay();
-        } else {
-            spawnMagmaCube();
+        switch (this.fullBlock) {
+            case FullOpaque:
+                spawnShulker();
+                break;
+
+            case FullTransparent:
+                spawnMagmaCube();
+                break;
+
+            case Nonfull:
+                spawnBlockDisplay();
+                break;
         }
     }
     private void createTeam() {
@@ -164,7 +187,7 @@ public class GlowingBlock {
 
         protocolManager.sendServerPacket(receiver, spawnEntityPacket);
 
-        float distance = 0.0005f;
+        float distance = 0.005f;
         float centerDiff = 0.00005f;
 
         PacketContainer entityMetadataPacket = new FakeEntityMetadataPacket(
@@ -185,6 +208,23 @@ public class GlowingBlock {
                 entityId,
                 entityUUID,
                 EntityType.MAGMA_CUBE,
+                entityLocation,
+                (byte) 0,
+                (byte) 0
+        );
+
+        protocolManager.sendServerPacket(receiver, spawnEntityPacket);
+        PacketContainer entityMetadataPacket = new FakeEntityMetadataPacket(
+                entityId
+        );
+        protocolManager.sendServerPacket(receiver, entityMetadataPacket);
+    }
+
+    private void spawnShulker() {
+        PacketContainer spawnEntityPacket = new FakeSpawnEntityPacket(
+                entityId,
+                entityUUID,
+                EntityType.SHULKER,
                 entityLocation,
                 (byte) 0,
                 (byte) 0

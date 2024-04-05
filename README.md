@@ -30,6 +30,11 @@ public void onPlayerInteract(PlayerInteractEvent event) {
 }
 ```
 
+Additionally, you can pass FullBlockEnum to change how glowing will affect block. \
+FullOpaque - uses shulkers (can place blocks on them) \
+FullTransparent - uses magma cubes (can't place blocks on them) \
+Nonfull - uses display block (can place blocks on them) \
+Detect - detects based on block type
 
 Replace VERSION with current version. \
 Gradle:
