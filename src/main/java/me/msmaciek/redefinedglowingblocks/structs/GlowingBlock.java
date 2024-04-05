@@ -197,6 +197,8 @@ public class GlowingBlock {
         protocolManager.sendServerPacket(receiver, entityMetadataPacket);
     }
 
+    // TODO: Add shulker
+
     private void destroyEntity() {
         PacketContainer fakeRemoveEntitiesPacket = new FakeRemoveEntitiesPacket(Collections.singletonList(entityId));
         protocolManager.sendServerPacket(receiver, fakeRemoveEntitiesPacket);
