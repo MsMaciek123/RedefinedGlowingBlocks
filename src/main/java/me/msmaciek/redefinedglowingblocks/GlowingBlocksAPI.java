@@ -50,6 +50,9 @@ public class GlowingBlocksAPI {
     }
 
     public void setGlowing(Player receiver, Block block, ChatColor color, FullBlockEnum fullBlock) {
+        if(receiver == null || !receiver.isOnline())
+            return;
+
         glowingBlocks.putIfAbsent(receiver.getUniqueId(), new HashMap<>());
 
         GlowingBlock glowingBlock = new GlowingBlock(receiver, block, color, fullBlock);
@@ -63,6 +66,9 @@ public class GlowingBlocksAPI {
     }
 
     public void unsetGlowing(Player receiver, Block block) {
+        if(receiver == null || !receiver.isOnline())
+            return;
+
         if(isGlowing(receiver, block)) {
             glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).ensureInvisibility();
             glowingBlocks.get(receiver.getUniqueId()).remove(block.getLocation());
@@ -73,6 +79,9 @@ public class GlowingBlocksAPI {
     }
 
     public boolean isGlowing(Player receiver, Block block) {
+        if(receiver == null || !receiver.isOnline())
+            return false;
+
         return glowingBlocks.containsKey(receiver.getUniqueId())
                 && glowingBlocks.get(receiver.getUniqueId()).containsKey(block.getLocation());
     }
