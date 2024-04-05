@@ -29,6 +29,9 @@ public void onPlayerInteract(PlayerInteractEvent event) {
 }
 ```
 
+[![Release](https://jitpack.io/v/MsMaciek123/RedefinedGlowingBlocks.svg)]
+(https://jitpack.io/#MsMaciek123/RedefinedGlowingBlocks.svg)
+
 Replace VERSION with current version.
 Gradle:
 ```
