@@ -1,4 +1,5 @@
 # Redefined Glowing Blocks
+![Release](https://jitpack.io/v/MsMaciek123/RedefinedGlowingBlocks.svg)
 
 **Redefined Glowing Blocks** is an API for developers to make blocks glowing. \
 Supported Minecraft versions: 1.20+ (due to use of block displays) \
@@ -30,9 +31,9 @@ public void onPlayerInteract(PlayerInteractEvent event) {
 ```
 
 
-Replace VERSION with current version: ![Release](https://jitpack.io/v/MsMaciek123/RedefinedGlowingBlocks.svg)    \
+Replace VERSION with current version. \
 Gradle:
-```
+```gradle
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
@@ -44,7 +45,7 @@ dependencies {
 ```
 
 Maven:
-```
+```xml
 <repositories>
     <repository>
         <id>jitpack.io</id>
