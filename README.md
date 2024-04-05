@@ -24,15 +24,15 @@ public void onPlayerInteract(PlayerInteractEvent event) {
     gbapi.setGlowing(player, block, ChatColor.BLUE);
 
     getServer().getScheduler().runTaskLater(this, () ->
-        gbapi.unsetGlowing(player, block),
-    20);
+                    gbapi.unsetGlowing(player, block),
+            20);
 }
 ```
 
 [![Release](https://jitpack.io/v/MsMaciek123/RedefinedGlowingBlocks.svg)]
 (https://jitpack.io/#MsMaciek123/RedefinedGlowingBlocks.svg)
 
-Replace VERSION with current version.
+Replace VERSION with current version. \
 Gradle:
 ```
 repositories {
