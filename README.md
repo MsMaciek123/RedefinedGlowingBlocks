@@ -25,8 +25,8 @@ public void onPlayerInteract(PlayerInteractEvent event) {
     gbapi.setGlowing(player, block, ChatColor.BLUE);
 
     getServer().getScheduler().runTaskLater(this, () ->
-                    gbapi.unsetGlowing(player, block),
-            20);
+        gbapi.unsetGlowing(player, block),
+    20);
 }
 ```
 
