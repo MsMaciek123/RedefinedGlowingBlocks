@@ -50,6 +50,7 @@ public class GlowingBlocksAPI {
     }
 
     public void setGlowing(Player receiver, Block block, ChatColor color, FullBlockEnum fullBlock) {
+            System.out.println("Player: " + receiver.getName() + " block: " + block.getLocation() + " color: " + color + " isreceiverNull: " + (receiver == null) + " isreceiverOnline: " + receiver.isOnline());
         if(receiver == null || !receiver.isOnline())
             return;
 

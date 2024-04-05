@@ -147,7 +147,9 @@ public class GlowingBlock {
         packetTeam.setCollisionRule(CollisionRule.NEVER);
         packetTeam.setEntities(Collections.singleton(entityUUID.toString()));
 
-        packetManager.sendPacket(receiver, packetTeam);
+        try {
+            packetManager.sendPacket(receiver, packetTeam);
+        } catch (Exception ignored) {}
     }
 
     private void spawnBlockDisplay() {
@@ -205,7 +207,9 @@ public class GlowingBlock {
         packetTeam.setTeamName(getTeamName(receiver, block.getLocation()));
         packetTeam.setMode(PacketTeam.Mode.REMOVE);
 
-        packetManager.sendPacket(receiver, packetTeam);
+        try {
+            packetManager.sendPacket(receiver, packetTeam);
+        } catch (Exception ignored) {}
     }
 
     public static String getTeamName(Player receiver, Location loc) {
