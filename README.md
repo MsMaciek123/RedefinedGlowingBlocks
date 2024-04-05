@@ -9,7 +9,7 @@ Any block could glow as full block or as depending on its texture. Some blocks w
 Example usage (this is your main class implementing listener):
 ```java
 GlowingBlocksAPI gbapi;
-
+        
 @Override
 public void onEnable() {
     gbapi = new GlowingBlocksAPI(this);
@@ -25,7 +25,7 @@ public void onPlayerInteract(PlayerInteractEvent event) {
     gbapi.setGlowing(player, block, ChatColor.BLUE);
 
     getServer().getScheduler().runTaskLater(this, () ->
-        gbapi.unsetGlowing(player, block),
+            gbapi.unsetGlowing(player, block),
     20);
 }
 ```

@@ -162,8 +162,8 @@ public class GlowingBlock {
 
         protocolManager.sendServerPacket(receiver, spawnEntityPacket);
 
-        float distance = 0.02f;
-        float centerDiff = 0.005f;
+        float distance = 0.0005f;
+        float centerDiff = 0.00005f;
 
         PacketContainer entityMetadataPacket = new FakeEntityMetadataPacket(
                 entityId,
