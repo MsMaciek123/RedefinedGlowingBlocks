@@ -215,7 +215,8 @@ public class GlowingBlock {
 
         protocolManager.sendServerPacket(receiver, spawnEntityPacket);
         PacketContainer entityMetadataPacket = new FakeEntityMetadataPacket(
-                entityId
+                entityId,
+                16
         );
         protocolManager.sendServerPacket(receiver, entityMetadataPacket);
     }

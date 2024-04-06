@@ -46,7 +46,7 @@ public class FakeEntityMetadataPacket extends PacketContainer {
     }
 
     // Magma entity
-    public FakeEntityMetadataPacket(int eID) {
+    public FakeEntityMetadataPacket(int eID, int magmaSize) {
         super(PacketType.Play.Server.ENTITY_METADATA);
         getModifier().writeDefaults();
         getIntegers().write(0, eID);
@@ -58,7 +58,7 @@ public class FakeEntityMetadataPacket extends PacketContainer {
                 (byte) (0x20 | 0x40) // invisible and glowing byte
             ),
             new WrappedDataValue(
-                16, // magma size
+                    magmaSize, // magma size
                 WrappedDataWatcher.Registry.get(Integer.class),
                 2
             ),
@@ -77,6 +77,38 @@ public class FakeEntityMetadataPacket extends PacketContainer {
                 WrappedDataWatcher.Registry.get(Boolean.class),
                 true
             )
+        );
+
+        getDataValueCollectionModifier().write(0, values);
+    }
+
+    // Shulker
+    public FakeEntityMetadataPacket(int eID) {
+        super(PacketType.Play.Server.ENTITY_METADATA);
+        getModifier().writeDefaults();
+        getIntegers().write(0, eID);
+
+        List<WrappedDataValue> values = List.of(
+                new WrappedDataValue(
+                        0,
+                        WrappedDataWatcher.Registry.get(Byte.class),
+                        (byte) (0x20 | 0x40) // invisible and glowing byte
+                ),
+                new WrappedDataValue(
+                        15, // NoAI
+                        WrappedDataWatcher.Registry.get(Byte.class),
+                        (byte) 0x01
+                ),
+                new WrappedDataValue(
+                        4, // isSilent
+                        WrappedDataWatcher.Registry.get(Boolean.class),
+                        true
+                ),
+                new WrappedDataValue(
+                        5, // noGravity
+                        WrappedDataWatcher.Registry.get(Boolean.class),
+                        true
+                )
         );
 
         getDataValueCollectionModifier().write(0, values);
