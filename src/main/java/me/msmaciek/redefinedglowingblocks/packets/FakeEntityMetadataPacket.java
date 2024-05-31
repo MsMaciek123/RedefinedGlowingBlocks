@@ -1,116 +1,56 @@
 package me.msmaciek.redefinedglowingblocks.packets;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.WrappedBlockData;
-import com.comphenix.protocol.wrappers.WrappedDataValue;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import org.bukkit.Material;
-import org.joml.Vector3f;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
+import com.github.retrooper.packetevents.util.Vector3f;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import org.bukkit.block.Block;
 
 import java.util.List;
 
-public class FakeEntityMetadataPacket extends PacketContainer {
+public class FakeEntityMetadataPacket extends WrapperPlayServerEntityMetadata {
 
     // Display entity
-    public FakeEntityMetadataPacket(int eID, Material material, Vector3f scale, Vector3f position) {
-        super(PacketType.Play.Server.ENTITY_METADATA);
-        getModifier().writeDefaults();
-        getIntegers().write(0, eID);
+    public FakeEntityMetadataPacket(int eID, Block block, Vector3f scale, Vector3f position) {
+        super(eID, List.of());
 
-        List<WrappedDataValue> values = List.of(
-            new WrappedDataValue(
-                0,
-                WrappedDataWatcher.Registry.get(Byte.class),
-                (byte) 0x40 // glowing byte
-            ),
-            new WrappedDataValue(
-                23,
-                WrappedDataWatcher.Registry.get(MinecraftReflection.getIBlockDataClass()),
-                WrappedBlockData.createData(material).getHandle() // block data
-            ),
-            new WrappedDataValue(
-                12, // scale, made it little bit smaller than full block, so it doesn't bug with texture
-                WrappedDataWatcher.Registry.get(Vector3f.class),
-                scale
-            ),
-            new WrappedDataValue(
-                11, // position (translation)
-                WrappedDataWatcher.Registry.get(Vector3f.class),
-                position
-            )
-        );
+        int blockStateId = 1;
 
-        getDataValueCollectionModifier().write(0, values);
+        try {
+            String blockStateName = block.getBlockData().getAsString();
+            blockStateId = WrappedBlockState.getByString(blockStateName).getGlobalId();
+        } catch (Exception e) {
+            System.out.println("[WARNING] Failed to get block state id for " + block.getBlockData().getAsString());
+            e.printStackTrace();
+        }
+
+        setEntityMetadata(List.of(
+            new EntityData(0, EntityDataTypes.BYTE, (byte) 0x40), // glowing byte
+            new EntityData(23, EntityDataTypes.BLOCK_STATE, blockStateId),
+            new EntityData(12, EntityDataTypes.VECTOR3F, scale), // scale, made it little bit smaller than full block, so it doesn't bug with texture
+            new EntityData(11, EntityDataTypes.VECTOR3F, position) // position (translation)
+        ));
     }
 
     // Magma entity
     public FakeEntityMetadataPacket(int eID, int magmaSize) {
-        super(PacketType.Play.Server.ENTITY_METADATA);
-        getModifier().writeDefaults();
-        getIntegers().write(0, eID);
-
-        List<WrappedDataValue> values = List.of(
-            new WrappedDataValue(
-                0,
-                WrappedDataWatcher.Registry.get(Byte.class),
-                (byte) (0x20 | 0x40) // invisible and glowing byte
-            ),
-            new WrappedDataValue(
-                    magmaSize, // magma size
-                WrappedDataWatcher.Registry.get(Integer.class),
-                2
-            ),
-            new WrappedDataValue(
-                15, // NoAI
-                WrappedDataWatcher.Registry.get(Byte.class),
-                (byte) 0x01
-            ),
-            new WrappedDataValue(
-                4, // isSilent
-                WrappedDataWatcher.Registry.get(Boolean.class),
-                true
-            ),
-            new WrappedDataValue(
-                5, // noGravity
-                WrappedDataWatcher.Registry.get(Boolean.class),
-                true
-            )
-        );
-
-        getDataValueCollectionModifier().write(0, values);
+        super(eID, List.of(
+            new EntityData(0, EntityDataTypes.BYTE, (byte) (0x20 | 0x40)), // invisible and glowing byte
+            new EntityData(15, EntityDataTypes.BYTE, (byte) 0x01), // NoAI
+            new EntityData(4, EntityDataTypes.BOOLEAN, true), // isSilent
+            new EntityData(5, EntityDataTypes.BOOLEAN, true), // noGravity
+            new EntityData(16, EntityDataTypes.INT, magmaSize)
+        ));
     }
 
     // Shulker
     public FakeEntityMetadataPacket(int eID) {
-        super(PacketType.Play.Server.ENTITY_METADATA);
-        getModifier().writeDefaults();
-        getIntegers().write(0, eID);
-
-        List<WrappedDataValue> values = List.of(
-                new WrappedDataValue(
-                        0,
-                        WrappedDataWatcher.Registry.get(Byte.class),
-                        (byte) (0x20 | 0x40) // invisible and glowing byte
-                ),
-                new WrappedDataValue(
-                        15, // NoAI
-                        WrappedDataWatcher.Registry.get(Byte.class),
-                        (byte) 0x01
-                ),
-                new WrappedDataValue(
-                        4, // isSilent
-                        WrappedDataWatcher.Registry.get(Boolean.class),
-                        true
-                ),
-                new WrappedDataValue(
-                        5, // noGravity
-                        WrappedDataWatcher.Registry.get(Boolean.class),
-                        true
-                )
-        );
-
-        getDataValueCollectionModifier().write(0, values);
+        super(eID, List.of(
+            new EntityData(0, EntityDataTypes.BYTE, (byte) (0x20 | 0x40)), // invisible and glowing byte
+            new EntityData(15, EntityDataTypes.BYTE, (byte) 0x01), // NoAI
+            new EntityData(4, EntityDataTypes.BOOLEAN, true), // isSilent
+            new EntityData(5, EntityDataTypes.BOOLEAN, true) // noGravity
+        ));
     }
 }

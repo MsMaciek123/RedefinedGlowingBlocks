@@ -1,5 +1,6 @@
 RedefinedGlowingBlocks.java
 resources/
+gradle.properties
 
 # User-specific stuff
 .idea/

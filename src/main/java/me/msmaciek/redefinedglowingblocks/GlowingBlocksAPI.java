@@ -1,13 +1,12 @@
 package me.msmaciek.redefinedglowingblocks;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import me.eliab.sbcontrol.SbControl;
-import me.eliab.sbcontrol.network.PacketManager;
+import com.github.retrooper.packetevents.PacketEvents;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import lombok.Getter;
 import me.msmaciek.redefinedglowingblocks.enums.FullBlockEnum;
 import me.msmaciek.redefinedglowingblocks.listeners.EventListener;
 import me.msmaciek.redefinedglowingblocks.structs.GlowingBlock;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -17,65 +16,66 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class GlowingBlocksAPI {
-
-    public HashMap<UUID, HashMap<Location, GlowingBlock>> glowingBlocks = new HashMap<>();
-
-    private JavaPlugin plugin;
-    private ProtocolManager protocolManager;
-    private PacketManager packetManager;
-
-    public static GlowingBlocksAPI instance;
+    @Getter private HashMap<UUID, HashMap<Location, GlowingBlock>> glowingBlocks = new HashMap<>();
+    @Getter private static GlowingBlocksAPI instance;
 
     public GlowingBlocksAPI(JavaPlugin plugin) {
-        testForPaper();
+        Utils.testForPaper();
 
-        this.plugin = plugin;
-        this.protocolManager = ProtocolLibrary.getProtocolManager();
-        this.packetManager = SbControl.getPacketManager();
+        if(PacketEvents.getAPI().isLoaded())
+            return;
+
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(plugin));
+
+        PacketEvents.getAPI().getSettings()
+                .reEncodeByDefault(true)
+                .checkForUpdates(false)
+                .bStats(false);
+
+        PacketEvents.getAPI().load();
         instance = this;
 
         plugin.getServer().getPluginManager().registerEvents(new EventListener(), plugin);
     }
 
-    private void testForPaper() {
-        try {
-            Class.forName("io.papermc.paper.event.packet.PlayerChunkLoadEvent");
-        } catch (ClassNotFoundException ex) {
-            throw new UnsupportedOperationException("Running unsupported software. Please use Paper.");
-        }
-    }
-
-    public void setGlowing(Player receiver, Block block, ChatColor color) {
+    public void setGlowing(Player receiver, Block block, NamedTextColor color) {
         setGlowing(receiver, block, color, FullBlockEnum.Detect);
     }
 
-    public void setGlowing(Player receiver, Block block, ChatColor color, FullBlockEnum fullBlock) {
+    public void setGlowing(Player receiver, Block block, NamedTextColor color, FullBlockEnum fullBlock) {
         if(receiver == null || !receiver.isOnline())
             return;
 
-        glowingBlocks.putIfAbsent(receiver.getUniqueId(), new HashMap<>());
+        UUID receiverUUID = receiver.getUniqueId();
+        Location blockLocation = block.getLocation();
+
+        glowingBlocks.putIfAbsent(receiverUUID, new HashMap<>());
 
         GlowingBlock glowingBlock = new GlowingBlock(receiver, block, color, fullBlock);
 
-        if(glowingBlocks.get(receiver.getUniqueId()).containsKey(block.getLocation()))
-            glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).RewriteGlowingBlock(glowingBlock);
+        if(glowingBlocks.get(receiverUUID).containsKey(blockLocation))
+            glowingBlocks.get(receiverUUID).get(blockLocation).RewriteGlowingBlock(glowingBlock);
         else
-            glowingBlocks.get(receiver.getUniqueId()).put(block.getLocation(), glowingBlock);
+            glowingBlocks.get(receiverUUID).put(blockLocation, glowingBlock);
 
-        glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).ensureVisiblity();
+        glowingBlocks.get(receiverUUID).get(blockLocation).ensureVisiblity();
     }
 
     public void unsetGlowing(Player receiver, Block block) {
         if(receiver == null || !receiver.isOnline())
             return;
 
-        if(isGlowing(receiver, block)) {
-            glowingBlocks.get(receiver.getUniqueId()).get(block.getLocation()).ensureInvisibility();
-            glowingBlocks.get(receiver.getUniqueId()).remove(block.getLocation());
+        if(!isGlowing(receiver, block))
+            return;
 
-            if(glowingBlocks.get(receiver.getUniqueId()).isEmpty())
-                glowingBlocks.remove(receiver.getUniqueId());
-        }
+        UUID receiverUUID = receiver.getUniqueId();
+        Location blockLocation = block.getLocation();
+
+        glowingBlocks.get(receiverUUID).get(blockLocation).ensureInvisibility();
+        glowingBlocks.get(receiverUUID).remove(blockLocation);
+
+        if(glowingBlocks.get(receiverUUID).isEmpty())
+            glowingBlocks.remove(receiverUUID);
     }
 
     public boolean isGlowing(Player receiver, Block block) {

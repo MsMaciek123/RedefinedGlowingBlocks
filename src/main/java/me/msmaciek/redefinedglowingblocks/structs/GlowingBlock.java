@@ -1,61 +1,43 @@
 package me.msmaciek.redefinedglowingblocks.structs;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketContainer;
-import me.eliab.sbcontrol.SbControl;
-import me.eliab.sbcontrol.enums.CollisionRule;
-import me.eliab.sbcontrol.network.PacketManager;
-import me.eliab.sbcontrol.network.packets.PacketTeam;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.util.Vector3f;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
+import lombok.Getter;
+import me.msmaciek.redefinedglowingblocks.Utils;
 import me.msmaciek.redefinedglowingblocks.enums.FullBlockEnum;
 import me.msmaciek.redefinedglowingblocks.packets.FakeEntityMetadataPacket;
-import me.msmaciek.redefinedglowingblocks.packets.FakeRemoveEntitiesPacket;
-import me.msmaciek.redefinedglowingblocks.packets.FakeSpawnEntityPacket;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.Slab;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
-import org.bukkit.util.VoxelShape;
-import org.joml.Vector3f;
 
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Getter
 public class GlowingBlock {
     private static final AtomicInteger ENTITY_ID_COUNTER =
-            new AtomicInteger(ThreadLocalRandom.current().nextInt(1_000_000, 2_000_000_000));
+        new AtomicInteger(ThreadLocalRandom.current().nextInt(1_000_000, 2_000_000_000));
 
+    private final Player receiver;
+    private final int entityId;
+    private final UUID entityUUID;
+    private final Block block;
+    private NamedTextColor color;
 
-    // TODO: Use lombok and make those private
-    public Player receiver;
-    public int entityId;
-    public UUID entityUUID;
-    public Block block;
-    public ChatColor color;
+    private FullBlockEnum fullBlock;
+    private Location entityLocation;
 
-    public FullBlockEnum fullBlock;
-    public Location entityLocation;
-    public float pitch;
-    public float yaw;
-
-
-    private final ProtocolManager protocolManager;
-    private final PacketManager packetManager;
-
-
-    public GlowingBlock(Player receiver, Block block, ChatColor color, FullBlockEnum fullBlock) {
-        this.protocolManager = ProtocolLibrary.getProtocolManager();
-        this.packetManager = SbControl.getPacketManager();
-
+    public GlowingBlock(Player receiver, Block block, NamedTextColor color, FullBlockEnum fullBlock) {
         this.receiver = receiver;
 
         this.entityId = ENTITY_ID_COUNTER.getAndIncrement();
@@ -68,24 +50,13 @@ public class GlowingBlock {
         if(fullBlock.equals(FullBlockEnum.Detect)) {
             if(block.getType().isOccluding())
                 this.fullBlock = FullBlockEnum.FullOpaque;
-            else if(isCube(block))
+            else if(Utils.isCube(block))
                 this.fullBlock = FullBlockEnum.FullTransparent;
             else
                 this.fullBlock = FullBlockEnum.Nonfull;
         }
 
         calculateEntityLocation();
-    }
-
-    // https://www.spigotmc.org/threads/how-to-check-if-a-block-is-realy-a-block.536470/
-    public boolean isCube(Block block) {
-        VoxelShape voxelShape = block.getCollisionShape();
-        BoundingBox boundingBox = block.getBoundingBox();
-        return (voxelShape.getBoundingBoxes().size() == 1
-                && boundingBox.getWidthX() == 1.0
-                && boundingBox.getHeight() == 1.0
-                && boundingBox.getWidthZ() == 1.0
-        );
     }
 
     public void RewriteGlowingBlock(GlowingBlock otherGlowingBlock) {
@@ -95,43 +66,7 @@ public class GlowingBlock {
 
     void calculateEntityLocation() {
         Location loc = block.getLocation();
-
         Vector positionModifier = new Vector(0, 0, 0);
-
-        // Stairs
-        if(this.fullBlock.equals(FullBlockEnum.Nonfull))
-        {
-            if (block.getBlockData() instanceof Bisected blockDataBiselected &&
-                    blockDataBiselected.getHalf() == Bisected.Half.TOP) {
-                positionModifier.add(new Vector(0, 1, 0));
-                pitch = 90 * 256.0F / 360.0F;
-            }
-
-            if(block.getBlockData() instanceof Directional blockDataDirectional) {
-                loc.setDirection(blockDataDirectional.getFacing().getDirection());
-                if (blockDataDirectional.getFacing() == BlockFace.NORTH) {
-                    yaw = 0 * 256.0F / 360.0F;
-                } else if (blockDataDirectional.getFacing() == BlockFace.EAST) {
-                    yaw = 90 * 256.0F / 360.0F;
-                    positionModifier.add(new Vector(1, 0, 0));
-                } else if (blockDataDirectional.getFacing() == BlockFace.SOUTH) {
-                    yaw = 180 * 256.0F / 360.0F;
-                    positionModifier.add(new Vector(1, 0, 1));
-                } else if (blockDataDirectional.getFacing() == BlockFace.WEST) {
-                    yaw = 270 * 256.0F / 360.0F;
-                    positionModifier.add(new Vector(0, 0, 1));
-                } else {
-                    yaw = 0;
-                }
-            }
-
-            if(block.getBlockData() instanceof Slab bockDataSlab) {
-                if (bockDataSlab.getType() == Slab.Type.TOP) {
-                    positionModifier.add(new Vector(0, 0.5, 0));
-                }
-            }
-        } else positionModifier.add(new Vector(0.5, 0, 0.5));
-
         entityLocation = loc.clone();
         entityLocation.add(positionModifier);
     }
@@ -146,113 +81,105 @@ public class GlowingBlock {
         removeTeam();
     }
 
+    //#region entities
     private void spawnEntity() {
         switch (this.fullBlock) {
             case FullOpaque:
-                spawnShulker();
+                spawnEntity(EntityTypes.SHULKER);
                 break;
 
             case FullTransparent:
-                spawnMagmaCube();
+                spawnEntity(EntityTypes.MAGMA_CUBE, 2);
                 break;
 
             case Nonfull:
-                spawnBlockDisplay();
+                spawnEntity(EntityTypes.BLOCK_DISPLAY);
                 break;
         }
     }
-    private void createTeam() {
-        PacketTeam packetTeam = packetManager.createPacketTeam();
-        packetTeam.setTeamName(getTeamName(receiver, entityLocation));
-        packetTeam.setMode(PacketTeam.Mode.CREATE);
 
-        packetTeam.setTeamColor(color);
-        packetTeam.setCollisionRule(CollisionRule.NEVER);
-        packetTeam.setEntities(Collections.singleton(entityUUID.toString()));
-
-        try {
-            packetManager.sendPacket(receiver, packetTeam);
-        } catch (Exception ignored) {}
+    private void spawnEntity(EntityType entityType) {
+        spawnEntity(entityType, 2);
     }
 
-    private void spawnBlockDisplay() {
-        PacketContainer spawnEntityPacket = new FakeSpawnEntityPacket(
-                entityId,
-                entityUUID,
-                EntityType.BLOCK_DISPLAY,
-                entityLocation,
-                (byte) pitch,
-                (byte) yaw
+    private void spawnEntity(EntityType entityType, int magmaSize) {
+        var spawnEntityPacket = new WrapperPlayServerSpawnEntity(
+            entityId,
+            entityUUID,
+            entityType,
+            new com.github.retrooper.packetevents.protocol.world.Location(
+                entityLocation.getX(),
+                entityLocation.getY(),
+                entityLocation.getZ(),
+                entityLocation.getYaw(),
+                entityLocation.getPitch()
+            ),
+            0, 0, null
         );
 
-        protocolManager.sendServerPacket(receiver, spawnEntityPacket);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, spawnEntityPacket);
 
+        FakeEntityMetadataPacket entityMetadataPacket = new FakeEntityMetadataPacket(entityId);
+
+        if(entityType == EntityTypes.BLOCK_DISPLAY)
+            entityMetadataPacket = getBlockDisplayEntityMedatataPacket();
+        else if(entityType == EntityTypes.MAGMA_CUBE)
+            entityMetadataPacket = new FakeEntityMetadataPacket(entityId, magmaSize);
+
+        PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, entityMetadataPacket);
+    }
+
+    private void destroyEntity() {
+        var teamRemovePacket = new WrapperPlayServerDestroyEntities(entityId);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, teamRemovePacket);
+    }
+    //#endregion
+
+    private FakeEntityMetadataPacket getBlockDisplayEntityMedatataPacket() {
         float distance = 0.01f;
         float centerDiff = 0.002f;
 
-        PacketContainer entityMetadataPacket = new FakeEntityMetadataPacket(
-                entityId,
-                block.getType(),
-                new Vector3f(1 - distance, 1 - distance, 1 - distance),
-                new Vector3f(
-                        distance / 2,
-                        distance / 2 - centerDiff,
-                        distance / 2 - centerDiff
-                )
+        return new FakeEntityMetadataPacket(
+            entityId,
+            block,
+            new Vector3f(1 - distance, 1 - distance, 1 - distance),
+            new Vector3f(
+                distance / 2,
+                distance / 2 - centerDiff,
+                distance / 2 - centerDiff
+            )
         );
-        protocolManager.sendServerPacket(receiver, entityMetadataPacket);
     }
 
-    private void spawnMagmaCube() {
-        PacketContainer spawnEntityPacket = new FakeSpawnEntityPacket(
-                entityId,
-                entityUUID,
-                EntityType.MAGMA_CUBE,
-                entityLocation,
-                (byte) 0,
-                (byte) 0
+
+    //#region teams
+    private void createTeam() {
+        var teamCreatePacket = new WrapperPlayServerTeams(
+            getTeamName(receiver, entityLocation),
+            WrapperPlayServerTeams.TeamMode.CREATE,
+            new WrapperPlayServerTeams.ScoreBoardTeamInfo(
+                Component.empty(),
+                null,
+                null,
+                WrapperPlayServerTeams.NameTagVisibility.ALWAYS,
+                WrapperPlayServerTeams.CollisionRule.NEVER,
+                color,
+                WrapperPlayServerTeams.OptionData.NONE
+            ),
+            Collections.singletonList(entityUUID.toString())
         );
 
-        protocolManager.sendServerPacket(receiver, spawnEntityPacket);
-        PacketContainer entityMetadataPacket = new FakeEntityMetadataPacket(
-                entityId,
-                16
-        );
-        protocolManager.sendServerPacket(receiver, entityMetadataPacket);
-    }
-
-    private void spawnShulker() {
-        PacketContainer spawnEntityPacket = new FakeSpawnEntityPacket(
-                entityId,
-                entityUUID,
-                EntityType.SHULKER,
-                entityLocation,
-                (byte) 0,
-                (byte) 0
-        );
-
-        protocolManager.sendServerPacket(receiver, spawnEntityPacket);
-        PacketContainer entityMetadataPacket = new FakeEntityMetadataPacket(
-                entityId
-        );
-        protocolManager.sendServerPacket(receiver, entityMetadataPacket);
-    }
-
-    // TODO: Add shulker
-
-    private void destroyEntity() {
-        PacketContainer fakeRemoveEntitiesPacket = new FakeRemoveEntitiesPacket(Collections.singletonList(entityId));
-        protocolManager.sendServerPacket(receiver, fakeRemoveEntitiesPacket);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, teamCreatePacket);
     }
 
     private void removeTeam() {
-        PacketTeam packetTeam = packetManager.createPacketTeam();
-        packetTeam.setTeamName(getTeamName(receiver, block.getLocation()));
-        packetTeam.setMode(PacketTeam.Mode.REMOVE);
+        var teamRemovePacket = new WrapperPlayServerTeams(
+            getTeamName(receiver, block.getLocation()),
+            WrapperPlayServerTeams.TeamMode.REMOVE,
+            new WrapperPlayServerTeams.ScoreBoardTeamInfo(null, null,null,null,null,null,null)
+        );
 
-        try {
-            packetManager.sendPacket(receiver, packetTeam);
-        } catch (Exception ignored) {}
+        PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, teamRemovePacket);
     }
 
     public static String getTeamName(Player receiver, Location loc) {
@@ -262,4 +189,5 @@ public class GlowingBlock {
 
         return "glowingBlocks-" + receiver.getName() + ":" + x + ":" + y + ":" + z;
     }
+    //#endregion
 }

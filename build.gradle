@@ -1,13 +1,14 @@
 plugins {
     id 'java'
-    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'com.github.MsMaciek123'
-version = '1.0.3'
+version = '1.1.0'
 
 repositories {
     mavenCentral()
+    maven { url 'https://repo.codemc.io/repository/maven-releases/' }
     maven {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
@@ -17,45 +18,29 @@ repositories {
         url = "https://oss.sonatype.org/content/groups/public/"
     }
     maven {
-        url = "https://repo.dmulloy2.net/repository/public/"
-    }
-    maven {
         url 'https://jitpack.io'
     }
     mavenLocal()
 }
 
 dependencies {
-    compileOnly "io.papermc.paper:paper-api:1.20-R0.1-SNAPSHOT"
-    compileOnly "com.comphenix.protocol:ProtocolLib:5.1.0"
-    implementation "me.eliab:sbcontrol:1.0.0"
-    compileOnly "io.netty:netty-all:4.1.104.Final"
+    compileOnly 'io.papermc.paper:paper-api:1.20-R0.1-SNAPSHOT'
+    compileOnly 'com.github.retrooper.packetevents:spigot:2.3.0'
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    implementation 'com.github.MsMaciek123:ReversibleHashMap:1.0.0'
+    implementation 'com.oracle.coherence.ce:coherence:22.06.8'
 }
 
 def targetJavaVersion = 17
 java {
-    withSourcesJar()
-    withJavadocJar()
-
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
-}
-
-wrapper {
-    gradleVersion = "7.3.3"
-    distributionType = Wrapper.DistributionType.ALL
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -70,7 +55,18 @@ processResources {
     def props = [version: version]
     inputs.properties props
     filteringCharset 'UTF-8'
-    filesMatching('paper-plugin.yml') {
+    filesMatching('plugin.yml') {
         expand props
     }
+}
+
+shadowJar {
+    minimize()
+
+    if (project.hasProperty('shadowJar_destinationDirectory')) {
+        destinationDirectory.set(file(getProperty('shadowJar_destinationDirectory')))
+    }
+
+    archiveFileName = "${project.name}-${project.version}.jar"
+    exclude "hotswap-agent.properties"
 }
