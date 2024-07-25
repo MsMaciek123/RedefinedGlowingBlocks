@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.HashMap;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public class GlowingBlocksAPI {
     @Getter private HashMap<UUID, HashMap<Location, GlowingBlock>> glowingBlocks = new HashMap<>();
     @Getter private static GlowingBlocksAPI instance;
@@ -38,8 +39,16 @@ public class GlowingBlocksAPI {
         plugin.getServer().getPluginManager().registerEvents(new EventListener(), plugin);
     }
 
+    public void setGlowing(Player receiver, Location blockLocation, NamedTextColor color) {
+        setGlowing(receiver, blockLocation.getBlock(), color);
+    }
+
     public void setGlowing(Player receiver, Block block, NamedTextColor color) {
         setGlowing(receiver, block, color, FullBlockEnum.Detect);
+    }
+
+    public void setGlowing(Player receiver, Location blockLocation, NamedTextColor color, FullBlockEnum fullBlock) {
+        setGlowing(receiver, blockLocation.getBlock(), color, fullBlock);
     }
 
     public void setGlowing(Player receiver, Block block, NamedTextColor color, FullBlockEnum fullBlock) {
@@ -61,6 +70,10 @@ public class GlowingBlocksAPI {
         glowingBlocks.get(receiverUUID).get(blockLocation).ensureVisiblity();
     }
 
+    public void unsetGlowing(Player receiver, Location blockLocation) {
+        unsetGlowing(receiver, blockLocation.getBlock());
+    }
+
     public void unsetGlowing(Player receiver, Block block) {
         if(receiver == null || !receiver.isOnline())
             return;
@@ -76,6 +89,10 @@ public class GlowingBlocksAPI {
 
         if(glowingBlocks.get(receiverUUID).isEmpty())
             glowingBlocks.remove(receiverUUID);
+    }
+
+    public boolean isGlowing(Player receiver, Location blockLocation) {
+        return isGlowing(receiver, blockLocation.getBlock());
     }
 
     public boolean isGlowing(Player receiver, Block block) {
