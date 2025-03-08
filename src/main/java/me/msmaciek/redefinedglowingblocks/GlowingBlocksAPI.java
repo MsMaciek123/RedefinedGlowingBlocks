@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
@@ -68,6 +69,13 @@ public class GlowingBlocksAPI {
             glowingBlocks.get(receiverUUID).put(blockLocation, glowingBlock);
 
         glowingBlocks.get(receiverUUID).get(blockLocation).ensureVisiblity();
+    }
+
+    public void unsetAllGlowings(Player receiver) {
+        if(!glowingBlocks.containsKey(receiver.getUniqueId())) return;
+        Set<Location> blockLocations = ((HashMap<Location, GlowingBlock>) glowingBlocks.get(receiver.getUniqueId()).clone()).keySet();
+        for(Location blockLocation : blockLocations)
+            unsetGlowing(receiver, blockLocation);
     }
 
     public void unsetGlowing(Player receiver, Location blockLocation) {
