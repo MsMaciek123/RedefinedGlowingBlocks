@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,6 +104,9 @@ public class GlowingBlock {
     }
 
     private void spawnEntity(EntityType entityType, int magmaSize) {
+        if(!Objects.equals(receiver.getWorld(), getEntityLocation().getWorld()))
+            return;
+
         var spawnEntityPacket = new WrapperPlayServerSpawnEntity(
             entityId,
             entityUUID,
