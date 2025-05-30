@@ -1,6 +1,7 @@
 package me.msmaciek.redefinedglowingblocks.listeners;
 
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
+import io.papermc.paper.event.packet.PlayerChunkUnloadEvent;
 import me.msmaciek.redefinedglowingblocks.GlowingBlocksAPI;
 import me.msmaciek.redefinedglowingblocks.structs.GlowingBlock;
 import org.bukkit.Location;
@@ -30,6 +31,27 @@ public class EventListener implements Listener {
                     && loc.getBlockX() >> 4 == event.getChunk().getX()
                     && loc.getBlockZ() >> 4 == event.getChunk().getZ()) {
                 glowingBlock.ensureVisiblity();
+            }
+        }
+    }
+
+    @EventHandler
+    public void PlayerChunkUnloadEvent(PlayerChunkUnloadEvent event) {
+        UUID playerUUID = event.getPlayer().getUniqueId();
+
+        GlowingBlocksAPI instance = GlowingBlocksAPI.getInstance();
+        if(!instance.getGlowingBlocks().containsKey(playerUUID))
+            return;
+
+        Collection<GlowingBlock> glowingBlocks = instance.getGlowingBlocks().get(playerUUID).values();
+
+        // https://github.com/SkytAsul/GlowingEntities/blob/master/src/main/java/fr/skytasul/glowingentities/GlowingBlocks.java
+        for(GlowingBlock glowingBlock : glowingBlocks) {
+            Location loc = glowingBlock.getBlock().getLocation();
+            if (Objects.equals(loc.getWorld(), event.getWorld())
+                    && loc.getBlockX() >> 4 == event.getChunk().getX()
+                    && loc.getBlockZ() >> 4 == event.getChunk().getZ()) {
+                glowingBlock.ensureInvisibility();
             }
         }
     }
